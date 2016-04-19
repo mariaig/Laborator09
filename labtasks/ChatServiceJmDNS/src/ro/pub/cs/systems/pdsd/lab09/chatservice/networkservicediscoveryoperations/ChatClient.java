@@ -93,11 +93,11 @@ public class ChatClient {
 						String line = messageQueue.take();
 						if(line != null) {
 							printWriter.println(line);
+							printWriter.flush();
 							Message message = new Message(line, Constants.MESSAGE_TYPE_SENT);
 							conversationHistory.add(message);
 							Log.e(Constants.MESSAGE_TYPE_SENT+"", "LINE SEND: " + line);
-							if(context != null) {
-								  ChatActivity chatActivity = (ChatActivity)context;
+							if(context != null) {								  ChatActivity chatActivity = (ChatActivity)context;
 								  FragmentManager fragmentManager = chatActivity.getFragmentManager();
 								  Fragment fragment = fragmentManager.findFragmentByTag(Constants.FRAGMENT_TAG);
 								  if (fragment instanceof ChatConversationFragment && fragment.isVisible()) {
