@@ -12,6 +12,10 @@ import java.util.concurrent.BlockingQueue;
 import ro.pub.cs.systems.pdsd.lab09.chatservice.general.Constants;
 import ro.pub.cs.systems.pdsd.lab09.chatservice.general.Utilities;
 import ro.pub.cs.systems.pdsd.lab09.chatservice.model.Message;
+import ro.pub.cs.systems.pdsd.lab09.chatservice.view.ChatActivity;
+import ro.pub.cs.systems.pdsd.lab09.chatservice.view.ChatConversationFragment;
+import android.app.Fragment;
+import android.app.FragmentManager;
 import android.content.Context;
 import android.util.Log;
 
@@ -85,6 +89,25 @@ public class ChatClient {
 					//   - if the ChatConversationFragment is visible (query the FragmentManager for the Constants.FRAGMENT_TAG tag)
 					//   append the message to the graphic user interface
 					
+					while(!Thread.currentThread().isInterrupted()) {
+						String line = messageQueue.take();
+						if(line != null) {
+							printWriter.println(line);
+							Message message = new Message(line, Constants.MESSAGE_TYPE_SENT);
+							conversationHistory.add(message);
+							Log.e(Constants.MESSAGE_TYPE_SENT+"", "LINE SEND: " + line);
+							if(context != null) {
+								  ChatActivity chatActivity = (ChatActivity)context;
+								  FragmentManager fragmentManager = chatActivity.getFragmentManager();
+								  Fragment fragment = fragmentManager.findFragmentByTag(Constants.FRAGMENT_TAG);
+								  if (fragment instanceof ChatConversationFragment && fragment.isVisible()) {
+								    ChatConversationFragment chatConversationFragment = (ChatConversationFragment)fragment;
+								    chatConversationFragment.appendMessage(message);
+								  }
+							}
+						}
+					}
+					
 				} catch (Exception exception) {
 					Log.e(Constants.TAG, "An exception has occurred: " + exception.getMessage());
 					if (Constants.DEBUG) {
@@ -121,6 +144,24 @@ public class ChatClient {
 					//   - add the message to the conversationHistory
 					//   - if the ChatConversationFragment is visible (query the FragmentManager for the Constants.FRAGMENT_TAG tag)
 					//   append the message to the graphic user interface
+					Log.e(Constants.MESSAGE_TYPE_RECEIVED+"", "LINE RECV: " + bufferedReader.readLine());
+					while(!Thread.currentThread().isInterrupted()) {
+						String line = bufferedReader.readLine();
+						Log.e(Constants.MESSAGE_TYPE_RECEIVED+"", "LINE RECV 2: " + line);
+						if (line != null) {
+							Message message  = new Message(line, Constants.MESSAGE_TYPE_RECEIVED);
+							conversationHistory.add(message);
+							if (context != null) {
+								  ChatActivity chatActivity = (ChatActivity)context;
+								  FragmentManager fragmentManager = chatActivity.getFragmentManager();
+								  Fragment fragment = fragmentManager.findFragmentByTag(Constants.FRAGMENT_TAG);
+								  if (fragment instanceof ChatConversationFragment && fragment.isVisible()) {
+								    ChatConversationFragment chatConversationFragment = (ChatConversationFragment)fragment;
+								    chatConversationFragment.appendMessage(message);
+								  }
+							}
+						}
+					}
 					
 				} catch (Exception exception) {
 					Log.e(Constants.TAG, "An exception has occurred: " + exception.getMessage());
